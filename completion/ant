@@ -1,0 +1,63 @@
+#!/bin/bash
+
+_ant_nb () 
+{ 
+    local cur prev words cword;
+    _init_completion || return;
+    case $prev in 
+        -buildfile | -file | -f)
+            _filedir 'xml';
+            return 0
+        ;;
+        -logfile | -l)
+            _filedir;
+            return 0
+        ;;
+        -propertyfile)
+            _filedir properties;
+            return 0
+        ;;
+        -nice)
+            COMPREPLY=($( compgen -W '{1..10}' -- "$cur" ));
+            return 0
+        ;;
+        -lib)
+            _filedir -d;
+            return 0
+        ;;
+        -logger | -listener | -inputhandler | -main | -find | -s)
+            return 0
+        ;;
+    esac;
+    if [[ $cur == -D* ]]; then
+        return 0;
+    else
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=($( compgen -W '$( _parse_help "$1" -h )' -- "$cur" ));
+        else
+            local buildfile=build.xml i;
+            for ((i=1; i < cword; i++ ))
+            do
+                if [[ "${words[i]}" == -@(?(build)file|f) ]]; then
+                    buildfile=${words[i+1]};
+                    break;
+                fi;
+            done;
+            [[ ! -f $buildfile ]] && return 0;
+            buildfiles=$buildfile
+            while read -rd '>' line; do
+                [[ $line =~ \<(impor)t[[:space:]].*file=[\"\']([^\"\']+) ]] && buildfiles+=" ${BASH_REMATCH[2]}";
+            done < $buildfile;
+            local line targets;
+            for b in $buildfiles
+            do
+                while read -rd '>' line; do
+                    [[ $line =~ \<(targe|extension-poin)t[[:space:]].*name=[\"\']([^-\"\'][^\"\']+) ]] && targets+=" ${BASH_REMATCH[2]}";
+                done < $b;
+            done
+            COMPREPLY=($( compgen -W '$targets' -- "$cur" ));
+        fi;
+    fi
+}
+
+complete -F _ant_nb ant.sh
