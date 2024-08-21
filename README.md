@@ -21,7 +21,7 @@ Next feature is to provide junit dependency to complete netbeans lifecycle. `ant
 
 About jdk, netbeans ant is based on environment variables. You need to setup `JAVA_HOME` or `JDK_HOME` to be recognized by ant netbeans config.
 
-##Install
+## Install
 
 Download and symlink to your path
 
